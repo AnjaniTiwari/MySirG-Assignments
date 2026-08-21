@@ -85,7 +85,7 @@ typedef struct {
     char college[30];
 } Student;
 typedef struct {
-    Student s[2];
+    Student* s[2];
 } Team;
 
 //Q6
@@ -100,13 +100,8 @@ Student* create_student(char* name, int rollno, char* college) {
 //Q7
 Team* create_team(Student* s1, Student* s2) {
     Team* t = (Team*)malloc(sizeof(Team));
-    strcpy(t->s[0].name, s1->name);
-    t->s[0].rollno = s1->rollno;
-    strcpy(t->s[0].college, s1->college);
-
-    strcpy(t->s[1].name, s2->name);
-    t->s[1].rollno = s2->rollno;
-    strcpy(t->s[1].college, s2->college);
+    t->s[0] = s1;
+    t->s[1] = s2;
     return t;
 }
 
@@ -116,8 +111,8 @@ void display_student(Student* s) {
 }
 
 void display_team(Team* t) {
-    display_student(&t->s[0]);
-    display_student(&t->s[1]);
+    display_student(t->s[0]);
+    display_student(t->s[1]);
 }
 
 //Q9
@@ -132,41 +127,57 @@ Team** team_arr(int size) {
 
 //Q11
 void driver() {
-    Team t_arr[3];
-    int i, j;
-    for(i = 0; i < 3; ++i) {
-        printf("\nTeam : %d", i+1);
-        for(j = 0; j < 2; ++j) {
-            printf("\nEnter student rollno, name and college:");
-            scanf("%d", &t_arr[i].s[j].rollno);
-            getchar();
-            fgets(t_arr[i].s[j].name, sizeof(t_arr[i].s[j].name), stdin);
-            t_arr[i].s[j].name[strlen(t_arr[i].s[j].name)-1] = '\0';
-            getchar();
-            fgets(t_arr[i].s[j].college, sizeof(t_arr[i].s[j].college), stdin);
-            t_arr[i].s[j].college[strlen(t_arr[i].s[j].college)-1] = '\0';
-        }
+    int i, j, k;
+    Team** t_arr;
+    Student** s_arr;
+    int rollno;
+    char name[20], college[20];
+
+    s_arr = student_arr(6);
+    t_arr = team_arr(3);
+
+    for(i = 0; i < 6; ++i) {
+        printf("\nEnter student rollno, name and college:");
+        scanf("%d", &rollno);
+        getchar();
+        fgets(name, sizeof(name), stdin);
+        name[strlen(name)-1] = '\0';
+        getchar();
+        fgets(college, sizeof(college), stdin);
+        college[strlen(college)-1] = '\0';
+        s_arr[i] = create_student(name, rollno, college);
     }
 
+    for(i = 0, k = 0; i < 3; ++i, k+=2) {
+        t_arr[i] = create_team(s_arr[k], s_arr[k+1]);
+        s_arr[k] = NULL;
+        s_arr[k+1] = NULL;
+    }
+    free(s_arr);
     printf("\n");
 
     for(i = 0; i < 3; ++i) {
         printf("\nTeam : %d", i+1);
         for(j = 0; j < 2; ++j) {
-            printf("\nRollno %d Name %s College %s\n", t_arr[i].s[j].rollno, 
-                                                     t_arr[i].s[j].name, 
-                                                     t_arr[i].s[j].college);
+            printf("\nRollno %d Name %s College %s\n", t_arr[i]->s[j]->rollno, 
+                                                     t_arr[i]->s[j]->name, 
+                                                     t_arr[i]->s[j]->college);
+            free(t_arr[i]->s[j]);
+            t_arr[i]->s[j] = NULL;
         }
+        free(t_arr[i]);
+        t_arr[i] = NULL;
         printf("\n\n");
     }
+    free(t_arr);
 }
 
 int main() {
     system("clear");
     
-    char* temp = input_string();
-    printf("%s", temp);
-    free(temp);
+    // char* temp = input_string();
+    // printf("%s", temp);
+    // free(temp);
 
     // input_values();
 
@@ -181,7 +192,7 @@ int main() {
     //     free(arr);
     // }
 
-    // driver();
+    driver();
 
     printf("\n");
     return 0;
